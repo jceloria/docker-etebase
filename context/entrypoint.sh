@@ -180,7 +180,7 @@ gen_inifile() {
 		DB_BACKEND="django.db.backends.sqlite3"
 	fi
 
-	cat <<- EOF > "${ETEBASE_EASY_CONFIG_PATH}"
+	cat <<- EOF | sed '/^$/N;/^\n$/D' > "${ETEBASE_EASY_CONFIG_PATH}"
 	[global]
 	secret_file = ${SECRET_FILE}
 	debug = ${DEBUG_DJANGO}
@@ -213,6 +213,7 @@ gen_inifile() {
 		file_env 'LDAP_BIND_PW'
 
 		cat <<- EOF >> "${ETEBASE_EASY_CONFIG_PATH}"
+
 		[ldap]
 		server = ${LDAP_SERVER}
 		bind_dn = ${LDAP_BINDDN}
@@ -223,10 +224,10 @@ gen_inifile() {
 		EOF
 	fi
 
-	echo '[allowed_hosts]' >> "${ETEBASE_EASY_CONFIG_PATH}"
+	echo -e '\n[allowed_hosts]' >> "${ETEBASE_EASY_CONFIG_PATH}"
 	local -a AHOSTS
 	local IFS=,
-	read -ra AHOSTS <<< "${ALLOWED_HOSTS}"
+	read -ra AHOSTS <<< "${ALLOWED_HOSTS//\'/}"
 	for i in "${!AHOSTS[@]}"; do
 		printf "allowed_hosts%d = %s\n" "$((i+1))" "${AHOSTS[$i]}" >> "${ETEBASE_EASY_CONFIG_PATH}"
 	done
